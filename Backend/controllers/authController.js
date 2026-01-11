@@ -10,18 +10,28 @@ const signup = async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ message: "Email id already exists" });
         }
+        let avatarUrl = "";
+        if (avatar) {
+            const uploadResponse = await imagekit.upload({
+                file: avatar,
+                fileName: 'avatar',
+                folder: "./mern-music-player",
+            });
+            avatarUrl = uploadResponse.url;
+        }
+
         const user = await User.create({
             name,
             email,
             password,
-            avatar,
+            avatar: avatarUrl,
         });
         res.status(201).json({
             message: "User created successfully", user: {
                 id: user._id,
                 name: user.name,
                 email: user.email,
-                avatar: user.avatar
+                avatar: user.avatar,
             },
         });
     } catch (error) {
