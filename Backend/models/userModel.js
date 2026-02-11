@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+import bcrypt from "bcrypt";
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -16,12 +16,24 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, "Password is required"],
         minLength: [6, "Password must be at least 6 characters"],
-        select: false
     },
     avatar: {
         type: String,
         default: "",
     },
+    resetPasswordToken: String,
+    resetPasswordTokenExpires: Date,
+
+    favourites: [
+        {
+            id: { type: String, required: true },
+            name: String,
+            artist_name: String,
+            image: String,
+            duration: String,
+            audio: String,
+        },
+    ],
 });
 // Pre save function  for password
 userSchema.pre("save", async function () {
@@ -29,6 +41,11 @@ userSchema.pre("save", async function () {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
 });
+
+// Compare Password
+userSchema.methods.comparePassword = function (enteredPassword) {
+    return bcrypt.compare(enteredPassword, this.password);
+};
 
 const User = mongoose.model("User", userSchema);
 export default User;
